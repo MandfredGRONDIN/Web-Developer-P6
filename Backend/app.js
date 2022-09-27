@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
 const sauceRoutes = require("./routes/sauce");
 const path = require('path');
+
 const app = express();
 
 mongoose.connect("mongodb+srv://test:test@cluster0.0jmu1vj.mongodb.net/test",
