@@ -17,7 +17,7 @@ exports.createSauce = (req, res, next) => {
   })
   // Enregistrement dans la bdd
   sauce.save()
-  .then(() => { res.status(201).json({message: 'Objet enregistré'})})
+  .then(() => { res.status(201).json({message: 'Sauce enregistrée !'})})
   .catch(error => res.status(400).json({error}))
   };
 
@@ -34,14 +34,14 @@ exports.modifySauce = (req, res, next) => {
     .then((sauce) => {
       // Vérification si bon utilisateur
       if (sauce.userId != req.auth.userId) {
-        res.status(401).json({ message: 'non autorisé' })
+        res.status(401).json({ message: 'Non autorisé' })
       } else {
         // Suppression de l'image
         const filename = sauce.imageUrl.split('/images/')[1];
         fs.unlink(`images/${filename}`,() => {
           // Mettre à jour l'enregistrement
           Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-          .then(() => res.status(200).json({ message: 'Objet modifié' }))
+          .then(() => res.status(200).json({ message: 'Sauce modifiée !' }))
           .catch(error => res.status(401).json({ error }))})
       }
     })
@@ -52,12 +52,12 @@ exports.deleteSauce = (req, res, next) => {
     Sauce.findOne({_id: req.params.id})
     .then(sauce => {
       if(sauce.userId != req.auth.userId){
-        res.status(401).json({message: 'non autorisé'})
+        res.status(401).json({message: 'Non autorisé'})
       } else {
         const filename = sauce.imageUrl.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
           Sauce.deleteOne({_id: req.params.id})
-          .then(() => {res.status(200).json({ message :'Objet supprimé'})})
+          .then(() => res.status(200).json({ message :'La sauce a bien été suprimmée !'}))
           .catch(error => res.status(401).json({error}))
         })
       }
