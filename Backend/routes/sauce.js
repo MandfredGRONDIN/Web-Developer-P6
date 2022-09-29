@@ -18,4 +18,5 @@ router.get("/", auth, sauceCtrl.getAllSauce);
 
 router.post("/:id/like", auth, like.likeFicheUser);
 
+
 module.exports = router;

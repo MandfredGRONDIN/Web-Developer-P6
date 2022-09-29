@@ -49,8 +49,10 @@ exports.modifySauce = (req, res, next) => {
 };
 
 exports.deleteSauce = (req, res, next) => {
+  // findOne pour avoir la sauce qui correspond a l'id
     Sauce.findOne({_id: req.params.id})
     .then(sauce => {
+      // Si l'userId != a l'userId du token, Non autorisation pour le delete
       if(sauce.userId != req.auth.userId){
         res.status(401).json({message: 'Non autorisé'})
       } else {
@@ -66,12 +68,14 @@ exports.deleteSauce = (req, res, next) => {
   };
 
 exports.getOneSauce = (req, res, next) => {
+  // findOne pour avoir la sauce qui correspond a l'id
     Sauce.findOne({ _id: req.params.id })
       .then((sauce) => res.status(200).json(sauce))
       .catch((error) => res.status(404).json({ error }));
   }; 
 
 exports.getAllSauce = (req, res, next) => {
+  // find pour avoir la liste complete des sauces
     Sauce.find()
       .then((sauces) => res.status(200).json(sauces))
       .catch((error) => res.status(400).json({ error }));
