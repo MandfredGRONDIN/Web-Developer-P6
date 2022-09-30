@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Utilisation de mongoose pour créer le schema de donnée
 const sauceSchema = mongoose.Schema({
-    userId: { type: String, required: true },
+    userId: { type: mongoose.Types.ObjectId, required: true },
     name: { type: String, required: true },
     manufacturer: {type: String, required: true },
     description: { type: String, required: true },
