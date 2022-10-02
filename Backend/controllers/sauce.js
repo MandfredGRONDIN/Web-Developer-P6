@@ -75,7 +75,7 @@ exports.getOneSauce = async (req, res, next) => {
     return res.status(200).json(sauce);
   } catch (e) {
     console.error(e);
-    return res.status(404).json({ error });
+    return res.status(404).json({ message : "Non trouvé" });
   }
 };
 
@@ -103,11 +103,9 @@ exports.likeSauce = async (req, res, next) => {
             }
           );
           if (!like) {
-            return res.status(400).json({ error });
+            return res.status(400).json({ message :'Mauvaise requête' });
           }
-          return res
-            .status(201)
-            .json({ message: "Votre avis a été pris en compte!" });
+          return res.status(201).json({ message: "Votre avis a été pris en compte!" });
         }
         if (sauce.usersDisliked.find((user) => user === req.body.userId)) {
           let dislike = await Sauce.updateOne(
@@ -119,11 +117,9 @@ exports.likeSauce = async (req, res, next) => {
             }
           );
           if (!dislike) {
-            return res.status(400).json({ error });
+            return res.status(400).json({ message :'Mauvaise requête' });
           }
-          return res
-            .status(201)
-            .json({ message: "Votre avis a été pris en compte!" });
+          return res.status(201).json({ message: "Votre avis a été pris en compte!" });
         }
         break;
       case 1:
@@ -136,11 +132,9 @@ exports.likeSauce = async (req, res, next) => {
           }
         );
         if (!like) {
-          return res.status(400).json({ error });
+          return res.status(400).json({ message :'Mauvaise requête' });
         }
-        return res
-          .status(201)
-          .json({ message: "Ton like a été pris en compte !" });
+        return res.status(201).json({ message: "Ton like a été pris en compte !" });
       case -1:
         let dislike = await Sauce.updateOne(
           { _id: req.params.id },
@@ -151,11 +145,9 @@ exports.likeSauce = async (req, res, next) => {
           }
         );
         if (!dislike) {
-          return res.status(400).json({ error });
+          return res.status(400).json({ message :'Mauvaise requête' });
         }
-        return res
-          .status(201)
-          .json({ message: "Ton dislike a été pris en compte !" });
+        return res.status(201).json({ message: "Ton dislike a été pris en compte !" });
     }
   } catch (e) {
     console.error(e);

@@ -36,7 +36,7 @@ const upload = multer({
             callback(null, true)
         } else {
             callback(null, false)
-            return callback(new Error('Seul les formats jpg et png sont autorisé'))
+            return callback(new Error('Seul les formats jpg, jpeg et png sont autorisé'))
         }
     },
 }).single('image')

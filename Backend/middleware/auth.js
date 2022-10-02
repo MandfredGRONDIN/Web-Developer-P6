@@ -7,6 +7,7 @@ module.exports = (req, res, next) => {
        const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
        if(!decodedToken){
         console.error('Accés non autorisé')
+        return res.status(403).json({ message : "Accés non autorisé" })
        }
        const userId = decodedToken.userId;
        req.auth = {
@@ -14,6 +15,6 @@ module.exports = (req, res, next) => {
        };
 	next();
    } catch(error) {
-       res.status(403).json({ message: 'Accés non autorisé' });
+       res.status(500).json({ message: 'Erreur interne du serveur' });
    }
 };

@@ -12,10 +12,10 @@ exports.signup = async (req, res) => {
             password: hash
         });
         await user.save()
-        if(user){
-            return res.status(201).json({message: 'Utilisateur créé !'})
+        if(!user){
+            return res.status(400).json({message : 'Utilisateur existant'})
         }
-        return error => res.status(400).json({error})
+        return res.status(201).json({message: 'Utilisateur créé !'})
     } catch(e) {
         console.error(e)
         return res.status(500).json({ message: 'Internal error' })
