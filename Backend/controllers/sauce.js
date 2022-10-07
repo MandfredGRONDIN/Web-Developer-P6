@@ -16,14 +16,14 @@ exports.createSauce = async (req, res) => {
       // Générer l'url de l'image
       imageUrl: `${req.protocol}://${req.get("host")}/images/${
         req.file.filename
-      }`,
+      }`
     });
     // Enregistrement dans la bdd
-    sauce.save();
-    return res.status(201).json({ message: "Sauce enregistrée !" });
+    await sauce.save();
+    return res.status(201).json({ message: "Recorded sauce" });
   } catch (e) {
     console.error(e);
-    return (error) => res.status(500).json({ message: "Donnée incorrect" });
+    return res.status(500).json({ message: "Internal error" });
   }
 };
 
@@ -38,30 +38,36 @@ exports.modifySauce = async (req, res) => {
       : { ...req.body };
     delete sauceObject.userId;
     let sauce = await Sauce.findOne({ _id: req.params.id });
+    if(!sauce){
+      return res.status(404).json({ message : 'Not found'});
+    }
     if (sauce.userId != req.auth.userId) {
-      return res.status(401).json({ message: "Non autorisé" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
     if (req.file) {
       const filename = sauce.imageUrl.split("/images/")[1];
       await fs.unlink(`images/${filename}`);
     }
     await Sauce.updateOne({ _id: req.params.id },{ ...sauceObject, _id: req.params.id });
-    return res.status(200).json({ message: "Sauce modifiée !" });
+    return res.status(200).json({ message: "Modified sauce" });
   } catch (e) {
-    return res.status(401).json({ message: "internal error" });
+    return res.status(401).json({ message: "Internal error" });
   }
 };
 
 exports.deleteSauce = async (req, res) => {
   try {
     let sauce = await Sauce.findOne({ _id: req.params.id });
+    if(!sauce){
+      return res.status(404).json({ message : 'Not found'});
+    }
     if (sauce.userId != req.auth.userId) {
-      return res.status(401).json({ message: "Non autorisé" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
     const filename = sauce.imageUrl.split("/images/")[1];
     await fs.unlink(`images/${filename}`);
     await Sauce.deleteOne({ _id: req.params.id });
-    return res.status(200).json({ message: "La sauce a bien été suprimmée !" });
+    return res.status(200).json({ message: "Sauce removed" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal error" });
@@ -72,10 +78,13 @@ exports.getOneSauce = async (req, res, next) => {
   try {
     // findOne pour avoir la sauce qui correspond a l'id
     let sauce = await Sauce.findOne({ _id: req.params.id });
+    if(!sauce){
+      return res.status(404).json({ message : 'Not found'});
+    }
     return res.status(200).json(sauce);
   } catch (e) {
     console.error(e);
-    return res.status(404).json({ message : "Non trouvé" });
+    return res.status(500).json({ message : "Internal error" });
   }
 };
 
@@ -84,71 +93,46 @@ exports.getAllSauce = async (req, res, next) => {
     let sauces = await Sauce.find();
     return res.status(200).json(sauces);
   } catch (e) {
-    return res.status(404).json({ message: "Pas de sauces" });
+    return res.status(500).json({ message: "Internal error" });
   }
 };
 
 exports.likeSauce = async (req, res, next) => {
   try {
+    let aggregate = null;
     switch (req.body.like) {
       case 0:
         let sauce = await Sauce.findOne({ id: req.params.id });
         if (sauce.usersLiked.find((user) => user === req.body.userId)) {
-          let like = await Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $inc: { likes: -1 },
-              $pull: { usersLiked: req.body.userId },
-              _id: req.params.id,
-            }
-          );
-          if (!like) {
-            return res.status(400).json({ message :'Mauvaise requête' });
-          }
-          return res.status(201).json({ message: "Votre avis a été pris en compte!" });
+          aggregate = {
+            $inc: { likes: -1 },
+            $pull: { usersLiked: req.body.userId }
+          };
         }
-        if (sauce.usersDisliked.find((user) => user === req.body.userId)) {
-          let dislike = await Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $inc: { dislikes: -1 },
-              $pull: { usersDisliked: req.body.userId },
-              _id: req.params.id,
-            }
-          );
-          if (!dislike) {
-            return res.status(400).json({ message :'Mauvaise requête' });
-          }
-          return res.status(201).json({ message: "Votre avis a été pris en compte!" });
+        else if (sauce.usersDisliked.find((user) => user === req.body.userId)) {
+          aggregate = {
+            $inc: { dislikes: -1 },
+            $pull: { usersDisliked: req.body.userId }
+          };
         }
         break;
       case 1:
-        let like = await Sauce.updateOne(
-          { _id: req.params.id },
-          {
-            $inc: { likes: 1 },
-            $push: { usersLiked: req.body.userId },
-            _id: req.params.id,
-          }
-        );
-        if (!like) {
-          return res.status(400).json({ message :'Mauvaise requête' });
+        aggregate = {
+          $inc: { likes: 1 },
+          $push: { usersLiked: req.body.userId }
         }
-        return res.status(201).json({ message: "Ton like a été pris en compte !" });
+        break;
       case -1:
-        let dislike = await Sauce.updateOne(
-          { _id: req.params.id },
-          {
-            $inc: { dislikes: 1 },
-            $push: { usersDisliked: req.body.userId },
-            _id: req.params.id,
-          }
-        );
-        if (!dislike) {
-          return res.status(400).json({ message :'Mauvaise requête' });
-        }
-        return res.status(201).json({ message: "Ton dislike a été pris en compte !" });
+        aggregate = {
+          $inc: { dislikes: 1 },
+          $push: { usersDisliked: req.body.userId }
+        };
+        break;
     }
+    if(aggregate){
+      await Sauce.updateOne({ _id: req.params.id } , aggregate);
+      }
+    return res.status(201).json({ message : "Ok"})
   } catch (e) {
     console.error(e);
     return res.status(500).json({ message: "Internal error" });

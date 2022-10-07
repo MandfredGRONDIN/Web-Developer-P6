@@ -10,8 +10,8 @@ const app = express();
 mongoose.connect(`mongodb+srv://${process.env.DB_MAIL}:${process.env.DB_PASSWORD}@cluster0.0jmu1vj.mongodb.net/test`,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
-  .then(() => console.log("Connexion à MongoDB réussie !"))
-  .catch(() => console.log("Connexion à MongoDB échouée !"));
+  .then(() => console.log("Connection to MongoDB successful !"))
+  .catch(() => console.log("Connection to MongoDB failed !"));
 
 app.use((req, res, next) => {
   // Accéder à notre API depuis n'importe quel origine

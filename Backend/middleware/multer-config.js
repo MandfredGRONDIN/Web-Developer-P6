@@ -32,11 +32,11 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     fileFilter:(req, file, callback) => {
-        if(file.mimetype == 'image/png' || file.mimetype == 'image/jpg' || file.mimetype == 'image/jpeg'){
-            callback(null, true)
-        } else {
+        if(!MIME_TYPES[file.mimetype]){
             callback(null, false)
-            return callback(new Error('Seul les formats jpg, jpeg et png sont autorisé'))
+            return callback(new Error('Only jpg, jpeg and png formats are allowed'))
+        } else {
+            callback(null, true)
         }
     },
 }).single('image')
