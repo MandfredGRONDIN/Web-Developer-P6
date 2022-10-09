@@ -29,21 +29,26 @@ exports.createSauce = async (req, res) => {
 
 exports.modifySauce = async (req, res) => {
   try {
+    // Vérification si dans la modification il y as aussi une image
     const sauceObject = req.file ? {
           ...JSON.parse(req.body.sauce),
           imageUrl: `${req.protocol}://${req.get("host")}/images/${
             req.file.filename
-          }`,
+          }`
         }
       : { ...req.body };
+    // On supprime l'userId
     delete sauceObject.userId;
     let sauce = await Sauce.findOne({ _id: req.params.id });
+    // Si la sauce n'existe pas/plus
     if(!sauce){
       return res.status(404).json({ message : 'Not found'});
     }
+    // Si l'userId ne correspond pas à l'userId de celui qui as créer la sauce
     if (sauce.userId != req.auth.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+    // Si il y as une nouvelle image pour la modification on supprime l'ancienne image
     if (req.file) {
       const filename = sauce.imageUrl.split("/images/")[1];
       await fs.unlink(`images/${filename}`);
@@ -51,7 +56,8 @@ exports.modifySauce = async (req, res) => {
     await Sauce.updateOne({ _id: req.params.id },{ ...sauceObject, _id: req.params.id });
     return res.status(200).json({ message: "Modified sauce" });
   } catch (e) {
-    return res.status(401).json({ message: "Internal error" });
+    console.error(e)
+    return res.status(500).json({ message: "Internal error" });
   }
 };
 
@@ -93,6 +99,7 @@ exports.getAllSauce = async (req, res, next) => {
     let sauces = await Sauce.find();
     return res.status(200).json(sauces);
   } catch (e) {
+    console.error(e)
     return res.status(500).json({ message: "Internal error" });
   }
 };
@@ -102,6 +109,7 @@ exports.likeSauce = async (req, res, next) => {
     let aggregate = null;
     switch (req.body.like) {
       case 0:
+        // Pour retirer le like
         let sauce = await Sauce.findOne({ id: req.params.id });
         if (sauce.usersLiked.find((user) => user === req.body.userId)) {
           aggregate = {
@@ -109,6 +117,7 @@ exports.likeSauce = async (req, res, next) => {
             $pull: { usersLiked: req.body.userId }
           };
         }
+        // Pour retirer le dislike
         else if (sauce.usersDisliked.find((user) => user === req.body.userId)) {
           aggregate = {
             $inc: { dislikes: -1 },
@@ -117,12 +126,14 @@ exports.likeSauce = async (req, res, next) => {
         }
         break;
       case 1:
+        // Pour le like
         aggregate = {
           $inc: { likes: 1 },
           $push: { usersLiked: req.body.userId }
         }
         break;
       case -1:
+        // Pour le dislike
         aggregate = {
           $inc: { dislikes: 1 },
           $push: { usersDisliked: req.body.userId }
