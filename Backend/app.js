@@ -7,7 +7,7 @@ require('dotenv').config()
 
 const app = express();
 
-mongoose.connect(`mongodb+srv://${process.env.DB_MAIL}:${process.env.DB_PASSWORD}@cluster0.0jmu1vj.mongodb.net/test`,
+mongoose.connect(`mongodb+srv://${process.env.DB}`,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connection to MongoDB successful !"))

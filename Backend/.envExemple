@@ -1,3 +1,2 @@
 TOKEN_KEY = Clé hasher du token
-DB_MAIL = Email de votre bdd
-DB_PASSWORD = Mdp de votre bdd
+DB = URL mongoDB like 'username:password@cluster0.ogotjjd.mongodb.net/' . Replace username and password by your username and password.
