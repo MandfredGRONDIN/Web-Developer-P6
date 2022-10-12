@@ -54,7 +54,7 @@ exports.modifySauce = async (req, res) => {
       await fs.unlink(`images/${filename}`);
     }
     await Sauce.updateOne({ _id: req.params.id },{ ...sauceObject, _id: req.params.id });
-    return res.status(200).json({ message: "Modified sauce" });
+    return res.status(201).json({ message: "Modified sauce" });
   } catch (e) {
     console.error(e)
     return res.status(500).json({ message: "Internal error" });
@@ -73,7 +73,7 @@ exports.deleteSauce = async (req, res) => {
     const filename = sauce.imageUrl.split("/images/")[1];
     await fs.unlink(`images/${filename}`);
     await Sauce.deleteOne({ _id: req.params.id });
-    return res.status(200).json({ message: "Sauce removed" });
+    return res.status(204).json({ message: "Sauce removed" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal error" });
